@@ -1,0 +1,57 @@
+# Strobe Controller Mobile MVP
+
+Flutter application and ESP32 firmware for configuring and controlling a strobe-light controller over BLE.
+
+## Core Features
+- Offline-first mobile UI with optional mock mode.
+- BLE service abstraction that can be replaced later with Bluetooth Serial or Wi-Fi transport.
+- Device management: add, edit, delete, enable, disable, and channel/output assignment.
+- Large manual control pad for real-time actions.
+- Pattern configuration (speed, pause, alternating, random).
+- Local profile storage with JSON import/export.
+- ESP32 firmware with non-blocking command parsing and fail-safe shutdown.
+
+## Project Structure
+- `lib/models`
+- `lib/services`
+- `lib/providers`
+- `lib/screens`
+- `lib/widgets`
+- `firmware/esp32_ble_controller`
+- `test`
+- `integration_test`
+
+## Run App
+1. Install Flutter (3.41+ recommended).
+2. Run `flutter pub get`.
+3. Run `flutter run`.
+4. On Android BLE runs, grant Bluetooth Scan/Connect and Location permissions.
+
+## BLE Contract
+- Device name: `ESP32-StrobeCtrl`
+- Service UUID: `5E7A1001-0000-4C0A-B001-112233445566`
+- Command characteristic (write): `5E7A1002-0000-4C0A-B001-112233445566`
+- Status characteristic (read/notify): `5E7A1003-0000-4C0A-B001-112233445566`
+
+## Supported Command Protocol
+- `PING`
+- `STATUS`
+- `STOP`
+- `ALL_OFF`
+- `FrontLeft=ON` / `FrontLeft=OFF` and other channel direct commands
+- `MODE=ON;CH=FrontLeft,FrontRight`
+- `MODE=OFF;GROUP=REAR`
+- `MODE=STROBE;CH=FrontLeft,RearRight;ON=80;OFF=80;REP=5;PAUSE=300`
+- `MODE=ALTERNATE;CH=FrontLeft,FrontRight;ON=60;OFF=60;PAUSE=100`
+- `MODE=SEQUENCE;ORDER=FrontLeft,RearLeft,Beacon;ON=50;OFF=70;PAUSE=120`
+
+## Quality Gates
+- `flutter analyze`
+- `flutter test --coverage`
+- `flutter test integration_test`
+
+Detailed test strategy, load scenarios, and mutation notes are documented in:
+- `docs/TESTING.md`
+
+Release-level change history is documented in:
+- `CHANGELOG.md`

@@ -1,0 +1,57 @@
+{
+  "name": "Demo Rescue Bar",
+  "lastUpdated": "2026-04-02T12:00:00.000Z",
+  "devices": [
+    {
+      "id": "front-left",
+      "name": "Front Left Strobe",
+      "type": "front",
+      "channel": 1,
+      "group": "Front",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 220,
+      "mode": "burst",
+      "channelCount": 1,
+      "primaryOutput": 12
+    },
+    {
+      "id": "beacon",
+      "name": "Beacon Bar",
+      "type": "beacon",
+      "channel": 2,
+      "group": "Top",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "rotate",
+      "channelCount": 1,
+      "primaryOutput": 13
+    }
+  ],
+  "groups": [
+    {
+      "id": "front",
+      "name": "Front",
+      "colorHex": "#00AEEF",
+      "deviceIds": ["front-left"]
+    },
+    {
+      "id": "top",
+      "name": "Top",
+      "colorHex": "#FFD54F",
+      "deviceIds": ["beacon"]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "pattern-1",
+      "name": "Rapid Alternating",
+      "speed": 1.0,
+      "pauseMs": 120,
+      "syncEnabled": true,
+      "alternating": true,
+      "randomMode": false
+    }
+  ]
+}

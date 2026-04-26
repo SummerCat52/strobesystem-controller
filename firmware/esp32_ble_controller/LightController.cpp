@@ -8,6 +8,8 @@ bool logicalStateToPinState(bool on, bool inverted) {
 
 void LightController::begin() {
   for (uint8_t i = 0; i < Config::kChannelCount; ++i) {
+    const bool offPinState = logicalStateToPinState(false, _channels[i].inverted);
+    digitalWrite(_channels[i].gpio, offPinState ? HIGH : LOW);
     pinMode(_channels[i].gpio, OUTPUT);
   }
   allOff();

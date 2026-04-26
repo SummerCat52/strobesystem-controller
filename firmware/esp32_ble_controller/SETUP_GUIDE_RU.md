@@ -122,6 +122,15 @@ constexpr bool kChannelInverted[kChannelCount] = {
 
 Не подключайся к телевизорам, наушникам и другим BLE-устройствам.
 
+Если приложение не видит `ESP32-StrobeCtrl`:
+
+1. В `Serial Monitor` должна быть строка `STATUS: READY`.
+2. В `Serial Monitor` должна быть строка `BLE advertising started as ESP32-StrobeCtrl`.
+3. На телефоне должны быть включены Bluetooth и Location.
+4. В разрешениях приложения должны быть разрешены Bluetooth scan, Bluetooth connect и Location.
+5. Не подключай ESP32 через системное меню Bluetooth Android. Сканирование и подключение выполняются внутри приложения.
+6. Перезапусти ESP32 кнопкой `EN`/`RST`, затем снова нажми `Scan Controllers`.
+
 ## 10. Как заполнять Devices
 
 `Devices` -> `Add Device`. Данные берутся из фактической проводки:

@@ -20,7 +20,14 @@ void BLEHandler::begin() {
   _statusCharacteristic->setValue("BOOT");
 
   service->start();
-  _server->getAdvertising()->start();
+
+  BLEAdvertising* advertising = BLEDevice::getAdvertising();
+  advertising->addServiceUUID(Config::kServiceUuid);
+  advertising->setScanResponse(true);
+  advertising->setMinPreferred(0x06);
+  advertising->setMaxPreferred(0x12);
+  BLEDevice::startAdvertising();
+  Serial.println("BLE advertising started as ESP32-StrobeCtrl");
 }
 
 void BLEHandler::updateStatus(const String& statusText) {
@@ -40,7 +47,7 @@ void BLEHandler::ServerCallbacks::onConnect(BLEServer* server) {
 void BLEHandler::ServerCallbacks::onDisconnect(BLEServer* server) {
   _owner._listener.onBleDisconnected();
   _owner.updateStatus("DISCONNECTED");
-  server->getAdvertising()->start();
+  BLEDevice::startAdvertising();
 }
 
 void BLEHandler::CommandCallbacks::onWrite(BLECharacteristic* characteristic) {

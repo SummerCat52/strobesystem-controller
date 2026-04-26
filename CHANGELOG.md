@@ -3,6 +3,7 @@
 ## Unreleased
 - Added a dedicated Russian LED-only bench test guide for safe ESP32 validation before connecting MOSFETs, relays, 12V loads, or vehicle wiring.
 - Added an example LED bench profile JSON matching the default 8-channel firmware GPIO map.
+- Added a regression test that validates the LED bench profile against the default firmware GPIO map.
 
 ## 0.2.0 - 2026-04-10
 

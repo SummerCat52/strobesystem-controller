@@ -13,42 +13,49 @@ class ManualControlScreen extends StatelessWidget {
       label: 'Front Left',
       icon: Icons.lightbulb_outline,
       channelName: 'FrontLeft',
+      gpioLabel: 'GPIO16',
     ),
     _ZoneControl(
       keyName: 'front_right',
       label: 'Front Right',
       icon: Icons.lightbulb_outline,
       channelName: 'FrontRight',
+      gpioLabel: 'GPIO17',
     ),
     _ZoneControl(
       keyName: 'rear_left',
       label: 'Rear Left',
       icon: Icons.lightbulb_outline,
       channelName: 'RearLeft',
+      gpioLabel: 'GPIO18',
     ),
     _ZoneControl(
       keyName: 'rear_right',
       label: 'Rear Right',
       icon: Icons.lightbulb_outline,
       channelName: 'RearRight',
+      gpioLabel: 'GPIO19',
     ),
     _ZoneControl(
       keyName: 'side_left',
       label: 'Side Left',
       icon: Icons.linear_scale,
       channelName: 'SideLeft',
+      gpioLabel: 'GPIO21',
     ),
     _ZoneControl(
       keyName: 'side_right',
       label: 'Side Right',
       icon: Icons.linear_scale,
       channelName: 'SideRight',
+      gpioLabel: 'GPIO22',
     ),
     _ZoneControl(
       keyName: 'beacon',
       label: 'Beacon',
       icon: Icons.wb_incandescent_outlined,
       channelName: 'Beacon',
+      gpioLabel: 'GPIO23',
       accentColor: Color(0xFFFFB300),
     ),
     _ZoneControl(
@@ -56,6 +63,7 @@ class ManualControlScreen extends StatelessWidget {
       label: 'Flood',
       icon: Icons.sunny,
       channelName: 'Flood',
+      gpioLabel: 'GPIO25',
       accentColor: Color(0xFF4FC3F7),
     ),
   ];
@@ -154,6 +162,7 @@ class ManualControlScreen extends StatelessWidget {
                     final command = '${control.channelName}=${active ? 'OFF' : 'ON'}';
                     return _ZoneTile(
                       label: control.label,
+                      subtitle: '${control.channelName} -> ${control.gpioLabel}',
                       icon: control.icon,
                       active: active,
                       accentColor: control.accentColor,
@@ -200,6 +209,7 @@ class ManualControlScreen extends StatelessWidget {
 class _ZoneTile extends StatelessWidget {
   const _ZoneTile({
     required this.label,
+    required this.subtitle,
     required this.icon,
     required this.active,
     required this.onTap,
@@ -207,6 +217,7 @@ class _ZoneTile extends StatelessWidget {
   });
 
   final String label;
+  final String subtitle;
   final IconData icon;
   final bool active;
   final VoidCallback onTap;
@@ -245,6 +256,16 @@ class _ZoneTile extends StatelessWidget {
                         color: active ? Colors.white : null,
                       ),
                 ),
+              ),
+              Text(
+                subtitle,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: active
+                          ? Colors.white70
+                          : colorScheme.onSurfaceVariant,
+                    ),
               ),
             ],
           ),
@@ -289,6 +310,7 @@ class _ZoneControl {
     required this.label,
     required this.icon,
     required this.channelName,
+    required this.gpioLabel,
     this.accentColor,
   });
 
@@ -296,6 +318,7 @@ class _ZoneControl {
   final String label;
   final IconData icon;
   final String channelName;
+  final String gpioLabel;
   final Color? accentColor;
 }
 

@@ -222,6 +222,23 @@ GPIO_STATE_SNAPSHOT:
 
 Если `GPIO_WRITE: channel=FrontLeft gpio=16 ... readback=HIGH` есть, а на измеряемом контакте `0V`, значит щуп стоит не на GPIO16 или контакт на плате выбран неверно.
 
+Если не получается найти нужный контакт, используй `Pin Scan` во вкладке `Control`.
+
+`Pin Scan` включает каналы по очереди:
+
+```text
+FrontLeft  / GPIO16 -> 3 секунды ON
+FrontRight / GPIO17 -> 3 секунды ON
+RearLeft   / GPIO18 -> 3 секунды ON
+RearRight  / GPIO19 -> 3 секунды ON
+SideLeft   / GPIO21 -> 3 секунды ON
+SideRight  / GPIO22 -> 3 секунды ON
+Beacon     / GPIO23 -> 3 секунды ON
+Flood      / GPIO25 -> 3 секунды ON
+```
+
+Во время `Pin Scan` держи черный щуп на `GND`, а красным по очереди проверяй пины. Где появляется `3.0-3.3V`, там сейчас активный выход.
+
 ## 9. Тест паттернов
 
 После ручного теста можно проверять режимы:

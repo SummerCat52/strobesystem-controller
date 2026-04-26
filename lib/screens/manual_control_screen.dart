@@ -192,6 +192,23 @@ class ManualControlScreen extends StatelessWidget {
                     );
                   },
                 ),
+                const SizedBox(height: 8),
+                FilledButton.icon(
+                  onPressed: state.connection.status ==
+                          ControllerConnectionStatus.connected
+                      ? () => state.sendRawCommand(
+                            'MODE=SEQUENCE;ORDER=FrontLeft,FrontRight,RearLeft,RearRight,SideLeft,SideRight,Beacon,Flood;ON=3000;OFF=500;PAUSE=1000',
+                            critical: true,
+                          )
+                      : null,
+                  icon: const Icon(Icons.troubleshoot),
+                  label: const Text('Pin Scan: 3s each GPIO'),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Pin Scan turns on GPIO16, 17, 18, 19, 21, 22, 23, 25 one by one. Use DC V 20 on the multimeter.',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ],
             ),
           ),

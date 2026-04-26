@@ -9,6 +9,7 @@ void SafetyManager::onStartup(SystemState& state) {
 }
 
 void SafetyManager::onCommandReceived(unsigned long nowMs, SystemState& state) {
+  state.bleClientConnected = true;
   state.lastCommandAtMs = nowMs;
   state.safeStateActive = false;
 }

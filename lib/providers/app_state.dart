@@ -61,6 +61,16 @@ class AppState extends ChangeNotifier {
   final List<String> logs = <String>['App started'];
   String? selectedPatternId;
   final Set<String> activeControlKeys = <String>{};
+  static const Map<String, String> _channelToControlKey = <String, String>{
+    'FrontLeft': 'front_left',
+    'FrontRight': 'front_right',
+    'RearLeft': 'rear_left',
+    'RearRight': 'rear_right',
+    'SideLeft': 'side_left',
+    'SideRight': 'side_right',
+    'Beacon': 'beacon',
+    'Flood': 'flood',
+  };
 
   Future<void> bootstrap() async {
     devices = useMockMode ? MockData.devices() : <LightDevice>[];
@@ -402,8 +412,51 @@ class AppState extends ChangeNotifier {
         status: ControllerConnectionStatus.connected,
         message: 'BLE connected',
       );
+    } else if (normalized.startsWith('STATE=')) {
+      _applyControllerStatus(value);
     }
     _log(value);
+  }
+
+  void _applyControllerStatus(String value) {
+    final fields = <String, String>{};
+    for (final part in value.split(';')) {
+      final separator = part.indexOf('=');
+      if (separator <= 0) {
+        continue;
+      }
+      final key = part.substring(0, separator).trim().toUpperCase();
+      final fieldValue = part.substring(separator + 1).trim();
+      fields[key] = fieldValue;
+    }
+
+    final safe = fields['SAFE'] == '1';
+    final active = fields['ACTIVE'] ?? '';
+    if (safe || active.toUpperCase() == 'NONE') {
+      activeControlKeys.clear();
+    } else if (active.isNotEmpty) {
+      activeControlKeys
+        ..clear()
+        ..addAll(
+          active
+              .split(',')
+              .map((channel) => _channelToControlKey[channel.trim()])
+              .whereType<String>(),
+        );
+    }
+
+    final stateText = fields['STATE']?.toUpperCase();
+    if (stateText == 'DISCONNECTED') {
+      connection = connection.copyWith(
+        status: ControllerConnectionStatus.disconnected,
+        message: value,
+      );
+    } else if (stateText == 'CONNECTED') {
+      connection = connection.copyWith(
+        status: ControllerConnectionStatus.connected,
+        message: value,
+      );
+    }
   }
 
   void _log(String value) {

@@ -27,7 +27,7 @@ void PatternManager::stop(SystemState& state, bool allOff) {
     _controller.allOff();
   }
   state.activeMode = Mode::Idle;
-  state.safeStateActive = true;
+  state.safeStateActive = allOff;
 }
 
 void PatternManager::update(unsigned long nowMs, SystemState& state) {

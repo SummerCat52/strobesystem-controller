@@ -14,6 +14,34 @@ String nextToken(String& input, char separator) {
   token.trim();
   return token;
 }
+
+bool parsePositiveInteger(const String& rawValue, unsigned long maxValue,
+                          unsigned long& parsed) {
+  String value = rawValue;
+  value.trim();
+  if (value.isEmpty()) {
+    return false;
+  }
+
+  unsigned long result = 0;
+  for (uint16_t i = 0; i < value.length(); ++i) {
+    const char current = value.charAt(i);
+    if (!isDigit(current)) {
+      return false;
+    }
+    result = (result * 10UL) + static_cast<unsigned long>(current - '0');
+    if (result > maxValue) {
+      return false;
+    }
+  }
+
+  if (result == 0) {
+    return false;
+  }
+
+  parsed = result;
+  return true;
+}
 }  // namespace
 
 ParsedCommand CommandParser::parse(const String& rawCommand) const {
@@ -213,27 +241,52 @@ bool CommandParser::applyField(String key, String value, PatternConfig& config,
   }
 
   if (key == "ON" || key == "FLASH_ON") {
-    config.onMs = max(1, value.toInt());
+    unsigned long parsed = 0;
+    if (!parsePositiveInteger(value, 60000UL, parsed)) {
+      result.error = "Invalid ON value";
+      return false;
+    }
+    config.onMs = parsed;
     return true;
   }
 
   if (key == "OFF" || key == "FLASH_OFF") {
-    config.offMs = max(1, value.toInt());
+    unsigned long parsed = 0;
+    if (!parsePositiveInteger(value, 60000UL, parsed)) {
+      result.error = "Invalid OFF value";
+      return false;
+    }
+    config.offMs = parsed;
     return true;
   }
 
   if (key == "REP" || key == "REPEAT") {
-    config.repeat = max(1, value.toInt());
+    unsigned long parsed = 0;
+    if (!parsePositiveInteger(value, 1000UL, parsed)) {
+      result.error = "Invalid REP value";
+      return false;
+    }
+    config.repeat = static_cast<uint16_t>(parsed);
     return true;
   }
 
   if (key == "PAUSE" || key == "SERIES_PAUSE") {
-    config.seriesPauseMs = max(1, value.toInt());
+    unsigned long parsed = 0;
+    if (!parsePositiveInteger(value, 60000UL, parsed)) {
+      result.error = "Invalid PAUSE value";
+      return false;
+    }
+    config.seriesPauseMs = parsed;
     return true;
   }
 
   if (key == "SPEED") {
-    config.speedPercent = constrain(value.toInt(), 1, 1000);
+    unsigned long parsed = 0;
+    if (!parsePositiveInteger(value, 1000UL, parsed)) {
+      result.error = "Invalid SPEED value";
+      return false;
+    }
+    config.speedPercent = static_cast<uint16_t>(parsed);
     return true;
   }
 

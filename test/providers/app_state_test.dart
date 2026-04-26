@@ -60,6 +60,22 @@ void main() {
       expect(state.activeControlKeys, isEmpty);
     });
 
+    test('incoming firmware status reconciles active control keys', () async {
+      await state.bootstrap();
+      await state.connect('ESP32-StrobeCtrl');
+
+      connection.emit('STATE=CONNECTED;MODE=ON;ACTIVE=FrontLeft,Beacon;SAFE=0');
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+
+      expect(state.activeControlKeys, containsAll(['front_left', 'beacon']));
+      expect(state.connection.status, ControllerConnectionStatus.connected);
+
+      connection.emit('STATE=CONNECTED;MODE=IDLE;ACTIVE=NONE;SAFE=1');
+      await Future<void>.delayed(const Duration(milliseconds: 1));
+
+      expect(state.activeControlKeys, isEmpty);
+    });
+
     test('triggerControl ignores tap when live mode is disconnected', () async {
       await state.bootstrap();
       await state.triggerControl('front_left', 'FrontLeft=ON');

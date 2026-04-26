@@ -50,6 +50,10 @@ Flutter application and ESP32 firmware for configuring and controlling a strobe-
 - `flutter test --coverage`
 - `flutter test integration_test`
 
+## Hardware Build Guide
+- Full Russian wiring and soldering guide: `docs/BUILD_AND_WIRING_GUIDE_RU.md`
+- Firmware quick setup guide: `firmware/esp32_ble_controller/SETUP_GUIDE_RU.md`
+
 Detailed test strategy, load scenarios, and mutation notes are documented in:
 - `docs/TESTING.md`
 

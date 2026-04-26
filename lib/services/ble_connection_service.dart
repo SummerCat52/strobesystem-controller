@@ -32,6 +32,8 @@ class BleConnectionService implements ControllerConnectionService {
   StreamSubscription<BluetoothConnectionState>? _connectionSubscription;
   final Map<String, BluetoothDevice> _scanCache = <String, BluetoothDevice>{};
   static const List<String> _controllerNameHints = <String>[
+    'esp32-strobectrl',
+    'esp32 strobectrl',
     'esp32 strobe controller',
     'esp32',
     'strobe controller',
@@ -63,20 +65,24 @@ class BleConnectionService implements ControllerConnectionService {
           (hint) => normalizedName.contains(hint),
         );
 
-        if (!advertisesTargetService && !looksLikeController) {
+        final hasUsableName = name.trim().isNotEmpty;
+        if (!advertisesTargetService && !looksLikeController && !hasUsableName) {
           continue;
         }
 
-        final displayName = name.isNotEmpty ? name : 'BLE Controller';
-        final displayKey =
-            '$displayName  (${result.device.remoteId.str})';
+        final displayName = name.trim().isNotEmpty ? name.trim() : 'BLE Controller';
+        final tag = advertisesTargetService || looksLikeController
+            ? 'ESP32 candidate'
+            : 'BLE device';
+        final displayKey = '$displayName  (${result.device.remoteId.str})  - $tag';
         _scanCache[displayKey] = result.device;
       }
     });
 
     FlutterBluePlus.cancelWhenScanComplete(_scanSubscription!);
     await FlutterBluePlus.startScan(
-      timeout: const Duration(seconds: 4),
+      timeout: const Duration(seconds: 8),
+      androidUsesFineLocation: true,
     );
     await FlutterBluePlus.isScanning.where((value) => value == false).first;
     if (!completer.isCompleted) {

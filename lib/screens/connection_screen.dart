@@ -91,7 +91,7 @@ class ConnectionScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Expected device: ESP32 Strobe Controller or a device advertising the app BLE service UUID.',
+                'Expected device: ESP32-StrobeCtrl. If Android shows it in Bluetooth settings, do not pair there: connect from this screen.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 12),

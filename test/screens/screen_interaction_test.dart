@@ -24,6 +24,7 @@ void main() {
         profileStorageService: FakeProfileStorageService(),
         blePermissionService: FakeBlePermissionService(),
         profileExchangeService: FakeProfileExchangeService(),
+        enableHeartbeat: false,
       );
       await state.bootstrap();
       await state.connect('ESP32-StrobeCtrl');
@@ -46,6 +47,7 @@ void main() {
         profileStorageService: FakeProfileStorageService(),
         blePermissionService: FakeBlePermissionService(),
         profileExchangeService: FakeProfileExchangeService(),
+        enableHeartbeat: false,
       );
       await state.bootstrap();
       await state.connect('ESP32-StrobeCtrl');
@@ -67,6 +69,7 @@ void main() {
         profileStorageService: FakeProfileStorageService(),
         blePermissionService: FakeBlePermissionService(),
         profileExchangeService: FakeProfileExchangeService(),
+        enableHeartbeat: false,
       );
       await state.bootstrap();
 

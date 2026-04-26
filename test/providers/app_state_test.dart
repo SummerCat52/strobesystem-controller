@@ -26,6 +26,7 @@ void main() {
         profileStorageService: storage,
         blePermissionService: permission,
         profileExchangeService: exchange,
+        enableHeartbeat: false,
       );
     });
 

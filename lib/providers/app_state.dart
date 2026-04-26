@@ -25,10 +25,12 @@ class AppState extends ChangeNotifier {
     ControllerCommandCodec? commandCodec,
     ProfileExchangeService? profileExchangeService,
     BlePermissionService? blePermissionService,
+    bool enableHeartbeat = true,
   })  : _profileStorageService = profileStorageService ?? ProfileStorageService(),
         _commandCodec = commandCodec ?? ControllerCommandCodec(),
         _profileExchangeService = profileExchangeService ?? ProfileExchangeService(),
-        _blePermissionService = blePermissionService ?? BlePermissionService() {
+        _blePermissionService = blePermissionService ?? BlePermissionService(),
+        _enableHeartbeat = enableHeartbeat {
     final mobilePlatform = !kIsWeb &&
         (defaultTargetPlatform == TargetPlatform.android ||
             defaultTargetPlatform == TargetPlatform.iOS);
@@ -42,9 +44,11 @@ class AppState extends ChangeNotifier {
   final ControllerCommandCodec _commandCodec;
   final ProfileExchangeService _profileExchangeService;
   final BlePermissionService _blePermissionService;
+  final bool _enableHeartbeat;
   final Uuid _uuid = const Uuid();
 
   StreamSubscription<String>? _incomingSubscription;
+  Timer? _heartbeatTimer;
   DateTime _lastSentAt = DateTime.fromMillisecondsSinceEpoch(0);
 
   ThemeMode themeMode = ThemeMode.dark;
@@ -90,6 +94,7 @@ class AppState extends ChangeNotifier {
 
   @override
   void dispose() {
+    _stopHeartbeat();
     _incomingSubscription?.cancel();
     super.dispose();
   }
@@ -163,7 +168,9 @@ class AppState extends ChangeNotifier {
       }
       connection = await _connectionService.connect(controllerName);
       await sendRawCommand(_commandCodec.ping(), critical: true);
+      _startHeartbeat();
     } catch (error) {
+      _stopHeartbeat();
       connection = connection.copyWith(
         status: ControllerConnectionStatus.error,
         message: 'Connection failed: $error',
@@ -176,6 +183,7 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> disconnect() async {
+    _stopHeartbeat();
     await sendRawCommand(_commandCodec.allOff(), critical: true);
     connection = await _connectionService.disconnect();
     activeControlKeys.clear();
@@ -394,6 +402,7 @@ class AppState extends ChangeNotifier {
   }
 
   void _swapConnectionService(ControllerConnectionService nextService) {
+    _stopHeartbeat();
     _incomingSubscription?.cancel();
     _connectionService = nextService;
     _incomingSubscription = _connectionService.incomingMessages.listen(_handleIncoming);
@@ -402,6 +411,7 @@ class AppState extends ChangeNotifier {
   void _handleIncoming(String value) {
     final normalized = value.trim().toUpperCase();
     if (normalized == 'DISCONNECTED') {
+      _stopHeartbeat();
       connection = ConnectionStateModel.initial.copyWith(
         mockMode: useMockMode,
         message: 'BLE disconnected unexpectedly',
@@ -416,6 +426,25 @@ class AppState extends ChangeNotifier {
       _applyControllerStatus(value);
     }
     _log(value);
+  }
+
+  void _startHeartbeat() {
+    _heartbeatTimer?.cancel();
+    if (useMockMode || !_enableHeartbeat) {
+      return;
+    }
+    _heartbeatTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (connection.status != ControllerConnectionStatus.connected) {
+        _stopHeartbeat();
+        return;
+      }
+      unawaited(sendRawCommand(_commandCodec.ping(), critical: true));
+    });
+  }
+
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
   }
 
   void _applyControllerStatus(String value) {

@@ -95,6 +95,18 @@ constexpr bool kChannelInverted[kChannelCount] = {
 6. Нажми `Upload`.
 7. В `Serial Monitor` проверь `READY`.
 
+Если загрузка остановилась на `Connecting...` и появилась ошибка `Wrong boot mode detected`, это не ошибка прошивки. ESP32 не вошла в режим загрузчика.
+
+Что делать:
+
+1. Нажми `Upload`.
+2. На строке `Connecting...` зажми кнопку `BOOT`.
+3. Отпусти `BOOT`, когда начнется запись прошивки.
+4. Если плата не стартует, нажми `EN`/`RST` и повтори.
+5. Уменьши `Upload Speed` до `115200`.
+6. Используй USB-кабель с передачей данных.
+7. Отключи внешние провода от ESP32 на время прошивки.
+
 ## 8. Установка APK
 
 1. Установи `dist/StagePatch-release.apk` на Android.

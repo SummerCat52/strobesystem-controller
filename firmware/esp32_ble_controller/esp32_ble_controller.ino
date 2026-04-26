@@ -64,25 +64,91 @@ class StrobeControllerApp : public BLEHandlerListener {
   }
 
  private:
+  const char* parsedTypeName(ParsedCommandType type) const {
+    switch (type) {
+      case ParsedCommandType::Ping:
+        return "Ping";
+      case ParsedCommandType::Status:
+        return "Status";
+      case ParsedCommandType::Stop:
+        return "Stop";
+      case ParsedCommandType::AllOff:
+        return "AllOff";
+      case ParsedCommandType::ImmediateOn:
+        return "ImmediateOn";
+      case ParsedCommandType::ImmediateOff:
+        return "ImmediateOff";
+      case ParsedCommandType::Pattern:
+        return "Pattern";
+      case ParsedCommandType::Invalid:
+      default:
+        return "Invalid";
+    }
+  }
+
+  void printMaskDetails(uint32_t channelMask) const {
+    Serial.print("CHANNEL_MASK: 0b");
+    for (int8_t i = Config::kChannelCount - 1; i >= 0; --i) {
+      Serial.print((channelMask & (1UL << i)) != 0 ? '1' : '0');
+    }
+    Serial.print(" channels=");
+    bool printedAny = false;
+    for (uint8_t i = 0; i < Config::kChannelCount; ++i) {
+      if ((channelMask & (1UL << i)) == 0) {
+        continue;
+      }
+      if (printedAny) {
+        Serial.print(",");
+      }
+      Serial.print(channelName(static_cast<ChannelId>(i)));
+      printedAny = true;
+    }
+    Serial.println(printedAny ? "" : "NONE");
+  }
+
+  void printParsedCommand(const ParsedCommand& command) const {
+    Serial.print("PARSED: type=");
+    Serial.print(parsedTypeName(command.type));
+    Serial.print(" mode=");
+    Serial.print(modeName(command.pattern.mode));
+    Serial.print(" onMs=");
+    Serial.print(command.pattern.onMs);
+    Serial.print(" offMs=");
+    Serial.print(command.pattern.offMs);
+    Serial.print(" repeat=");
+    Serial.print(command.pattern.repeat);
+    Serial.print(" pauseMs=");
+    Serial.print(command.pattern.seriesPauseMs);
+    Serial.print(" speedPercent=");
+    Serial.println(command.pattern.speedPercent);
+    printMaskDetails(command.channelMask != 0 ? command.channelMask
+                                              : command.pattern.channelMask);
+  }
+
   void handleParsedCommand(const ParsedCommand& command) {
+    printParsedCommand(command);
     switch (command.type) {
       case ParsedCommandType::Ping:
         publishStatus("PONG");
+        _lightController.printStateSnapshot();
         return;
 
       case ParsedCommandType::Status:
         publishStatus(buildStatusText());
+        _lightController.printStateSnapshot();
         return;
 
       case ParsedCommandType::Stop:
         _patternManager.stop(_state, true);
         publishStatus("STOPPED");
+        _lightController.printStateSnapshot();
         return;
 
       case ParsedCommandType::AllOff:
         _patternManager.stop(_state, true);
         _lightController.allOff();
         publishStatus("ALL_OFF");
+        _lightController.printStateSnapshot();
         return;
 
       case ParsedCommandType::ImmediateOn:
@@ -90,6 +156,7 @@ class StrobeControllerApp : public BLEHandlerListener {
         _lightController.setMask(command.channelMask, true);
         _state.activeMode = Mode::On;
         publishStatus(buildStatusText());
+        _lightController.printStateSnapshot();
         return;
 
       case ParsedCommandType::ImmediateOff:
@@ -97,6 +164,7 @@ class StrobeControllerApp : public BLEHandlerListener {
         _lightController.setMask(command.channelMask, false);
         _state.activeMode = Mode::Off;
         publishStatus(buildStatusText());
+        _lightController.printStateSnapshot();
         return;
 
       case ParsedCommandType::Pattern:
@@ -105,6 +173,7 @@ class StrobeControllerApp : public BLEHandlerListener {
           _lightController.setMask(command.pattern.channelMask, true);
           _state.activeMode = Mode::On;
           publishStatus(buildStatusText());
+          _lightController.printStateSnapshot();
           return;
         }
         if (command.pattern.mode == Mode::Off) {
@@ -112,15 +181,18 @@ class StrobeControllerApp : public BLEHandlerListener {
           _lightController.setMask(command.pattern.channelMask, false);
           _state.activeMode = Mode::Off;
           publishStatus(buildStatusText());
+          _lightController.printStateSnapshot();
           return;
         }
 
         _patternManager.start(command.pattern, _state);
         publishStatus(buildStatusText());
+        _lightController.printStateSnapshot();
         return;
 
       default:
         publishStatus("ERROR:Unhandled command");
+        _lightController.printStateSnapshot();
         return;
     }
   }

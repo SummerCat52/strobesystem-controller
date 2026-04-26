@@ -25,6 +25,7 @@ class LightController {
   String activeChannelsCsv() const;
   const ChannelConfig& channelConfig(ChannelId id) const;
   void printChannelMap() const;
+  void printStateSnapshot() const;
 
  private:
   bool _channelStates[Config::kChannelCount] = {false};

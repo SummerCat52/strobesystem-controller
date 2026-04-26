@@ -212,11 +212,15 @@ ESP32-StrobeCtrl
 
 ```text
 RX: FrontLeft=ON
-PIN: FrontLeft GPIO16 -> ON
+PARSED: type=ImmediateOn mode=IDLE onMs=80 offMs=80 repeat=5 pauseMs=300 speedPercent=100
+CHANNEL_MASK: 0b00000001 channels=FrontLeft
+GPIO_WRITE: channel=FrontLeft gpio=16 logical=ON inverted=false pinLevel=HIGH readback=HIGH
 STATUS: STATE=CONNECTED;MODE=ON;ACTIVE=FrontLeft;SAFE=0
+GPIO_STATE_SNAPSHOT:
+  channel=FrontLeft gpio=16 logical=ON readback=HIGH
 ```
 
-Если `PIN: FrontLeft GPIO16 -> ON` есть, а на измеряемом контакте `0V`, значит щуп стоит не на GPIO16 или контакт на плате выбран неверно.
+Если `GPIO_WRITE: channel=FrontLeft gpio=16 ... readback=HIGH` есть, а на измеряемом контакте `0V`, значит щуп стоит не на GPIO16 или контакт на плате выбран неверно.
 
 ## 9. Тест паттернов
 

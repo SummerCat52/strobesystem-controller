@@ -28,12 +28,18 @@ void LightController::setChannel(ChannelId id, bool on) {
   const bool pinState = logicalStateToPinState(on, _channels[index].inverted);
   digitalWrite(_channels[index].gpio, pinState ? HIGH : LOW);
   _channelStates[index] = on;
-  Serial.print("PIN: ");
+  Serial.print("GPIO_WRITE: channel=");
   Serial.print(_channels[index].name);
-  Serial.print(" GPIO");
+  Serial.print(" gpio=");
   Serial.print(_channels[index].gpio);
-  Serial.print(" -> ");
-  Serial.println(on ? "ON" : "OFF");
+  Serial.print(" logical=");
+  Serial.print(on ? "ON" : "OFF");
+  Serial.print(" inverted=");
+  Serial.print(_channels[index].inverted ? "true" : "false");
+  Serial.print(" pinLevel=");
+  Serial.print(pinState ? "HIGH" : "LOW");
+  Serial.print(" readback=");
+  Serial.println(digitalRead(_channels[index].gpio) == HIGH ? "HIGH" : "LOW");
 }
 
 void LightController::setMask(uint32_t channelMask, bool on) {
@@ -92,5 +98,19 @@ void LightController::printChannelMap() const {
     Serial.print(_channels[i].name);
     Serial.print(" -> GPIO");
     Serial.println(_channels[i].gpio);
+  }
+}
+
+void LightController::printStateSnapshot() const {
+  Serial.println("GPIO_STATE_SNAPSHOT:");
+  for (uint8_t i = 0; i < Config::kChannelCount; ++i) {
+    Serial.print("  channel=");
+    Serial.print(_channels[i].name);
+    Serial.print(" gpio=");
+    Serial.print(_channels[i].gpio);
+    Serial.print(" logical=");
+    Serial.print(_channelStates[i] ? "ON" : "OFF");
+    Serial.print(" readback=");
+    Serial.println(digitalRead(_channels[i].gpio) == HIGH ? "HIGH" : "LOW");
   }
 }

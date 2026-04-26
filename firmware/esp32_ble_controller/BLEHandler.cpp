@@ -44,8 +44,8 @@ void BLEHandler::ServerCallbacks::onDisconnect(BLEServer* server) {
 }
 
 void BLEHandler::CommandCallbacks::onWrite(BLECharacteristic* characteristic) {
-  const std::string raw = characteristic->getValue();
-  if (raw.empty()) {
+  const auto raw = characteristic->getValue();
+  if (raw.length() == 0) {
     return;
   }
   _owner._listener.onBleCommand(String(raw.c_str()));

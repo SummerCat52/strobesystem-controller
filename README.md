@@ -52,7 +52,9 @@ Flutter application and ESP32 firmware for configuring and controlling a strobe-
 
 ## Hardware Build Guide
 - Full Russian wiring and soldering guide: `docs/BUILD_AND_WIRING_GUIDE_RU.md`
+- Safe LED-only bench test guide: `docs/LED_BENCH_TEST_GUIDE_RU.md`
 - Firmware quick setup guide: `firmware/esp32_ble_controller/SETUP_GUIDE_RU.md`
+- Example LED test profile: `examples/led_bench_profile.json`
 
 Detailed test strategy, load scenarios, and mutation notes are documented in:
 - `docs/TESTING.md`

@@ -1,0 +1,101 @@
+{
+  "name": "LED Bench Test",
+  "devices": [
+    {
+      "id": "front-left-led",
+      "name": "Front Left LED",
+      "type": "front",
+      "channel": 1,
+      "group": "FRONT",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 16
+    },
+    {
+      "id": "front-right-led",
+      "name": "Front Right LED",
+      "type": "front",
+      "channel": 2,
+      "group": "FRONT",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 17
+    },
+    {
+      "id": "rear-left-led",
+      "name": "Rear Left LED",
+      "type": "rear",
+      "channel": 3,
+      "group": "REAR",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 18
+    },
+    {
+      "id": "rear-right-led",
+      "name": "Rear Right LED",
+      "type": "rear",
+      "channel": 4,
+      "group": "REAR",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 19
+    },
+    {
+      "id": "side-left-led",
+      "name": "Side Left LED",
+      "type": "left side",
+      "channel": 5,
+      "group": "SIDE",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 21
+    },
+    {
+      "id": "side-right-led",
+      "name": "Side Right LED",
+      "type": "right side",
+      "channel": 6,
+      "group": "SIDE",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 22
+    },
+    {
+      "id": "beacon-led",
+      "name": "Beacon LED",
+      "type": "beacon",
+      "channel": 7,
+      "group": "BEACON",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 23
+    },
+    {
+      "id": "flood-led",
+      "name": "Flood LED",
+      "type": "flood",
+      "channel": 8,
+      "group": "FLOOD",
+      "enabled": true,
+      "inverted": false,
+      "brightness": 255,
+      "mode": "test",
+      "primaryOutput": 25
+    }
+  ]
+}

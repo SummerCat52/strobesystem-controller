@@ -20,6 +20,7 @@ class StrobeControllerApp : public BLEHandlerListener {
     Serial.println("ESP32 BLE strobe controller booting...");
 
     _lightController.begin();
+    _lightController.printChannelMap();
     _safetyManager.onStartup(_state);
     _bleHandler.begin();
     publishStatus("READY");

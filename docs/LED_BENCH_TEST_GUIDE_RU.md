@@ -109,6 +109,20 @@ firmware/esp32_ble_controller/esp32_ble_controller.ino
 8. Скорость поставь `115200`.
 9. После перезапуска должно быть видно `READY`.
 
+При старте прошивка также печатает карту:
+
+```text
+GPIO MAP:
+  FrontLeft -> GPIO16
+  FrontRight -> GPIO17
+  RearLeft -> GPIO18
+  RearRight -> GPIO19
+  SideLeft -> GPIO21
+  SideRight -> GPIO22
+  Beacon -> GPIO23
+  Flood -> GPIO25
+```
+
 Если Arduino IDE пишет `Wrong boot mode detected` или `Failed to connect to ESP32`, код уже скомпилировался, но плата не вошла в режим загрузки:
 
 1. Нажми `Upload`.
@@ -193,6 +207,16 @@ ESP32-StrobeCtrl
 2. Черный щуп держи на `GND ESP32`.
 3. Красным щупом касайся нужного GPIO из таблицы.
 4. Нажимай соответствующую кнопку в приложении.
+
+В `Serial Monitor` при нажатии должно появляться, например:
+
+```text
+RX: FrontLeft=ON
+PIN: FrontLeft GPIO16 -> ON
+STATUS: STATE=CONNECTED;MODE=ON;ACTIVE=FrontLeft;SAFE=0
+```
+
+Если `PIN: FrontLeft GPIO16 -> ON` есть, а на измеряемом контакте `0V`, значит щуп стоит не на GPIO16 или контакт на плате выбран неверно.
 
 ## 9. Тест паттернов
 

@@ -15,8 +15,11 @@ class ControllerCommandCodec {
     'Flood',
   ];
 
+  String hello() => 'HELLO';
+  String heartbeat() => 'HEARTBEAT';
   String ping() => 'PING';
-  String getConfig() => 'STATUS';
+  String getConfig() => 'GET_CONFIG';
+  String status() => 'STATUS';
   String saveProfile() => '';
   String loadProfile(String name) => '';
   String allOff() => 'ALL_OFF';

@@ -167,7 +167,8 @@ class AppState extends ChangeNotifier {
         await _blePermissionService.ensurePermissions();
       }
       connection = await _connectionService.connect(controllerName);
-      await sendRawCommand(_commandCodec.ping(), critical: true);
+      await sendRawCommand(_commandCodec.hello(), critical: true);
+      await sendRawCommand(_commandCodec.getConfig(), critical: true);
       _startHeartbeat();
     } catch (error) {
       _stopHeartbeat();
@@ -438,7 +439,7 @@ class AppState extends ChangeNotifier {
         _stopHeartbeat();
         return;
       }
-      unawaited(sendRawCommand(_commandCodec.ping(), critical: true));
+      unawaited(sendRawCommand(_commandCodec.heartbeat(), critical: true));
     });
   }
 

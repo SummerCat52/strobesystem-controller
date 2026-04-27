@@ -253,6 +253,9 @@ Flood      / GPIO25 -> 3 секунды ON
 Для ручной проверки через BLE-команды прошивка понимает:
 
 ```text
+HELLO
+GET_CONFIG
+HEARTBEAT
 MODE=STROBE;CH=FrontLeft,RearRight;ON=80;OFF=80;REP=5;PAUSE=300
 MODE=ALTERNATE;CH=FrontLeft,FrontRight;ON=80;OFF=80;PAUSE=300
 MODE=SEQUENCE;ORDER=FrontLeft,FrontRight,RearLeft,RearRight;ON=80;OFF=80;PAUSE=200
@@ -261,6 +264,18 @@ STOP
 STATUS
 PING
 ```
+
+Настройки ESP32 можно менять командами:
+
+```text
+SET_GPIO;CH=FrontLeft;GPIO=16
+SET_INVERT;CH=Beacon;VALUE=0
+SET_FAILSAFE;MS=5000
+SAVE_CONFIG
+FACTORY_RESET
+```
+
+Эти настройки сохраняются в NVS-памяти ESP32 и переживают перезагрузку.
 
 ## 10. Тест fail-safe
 

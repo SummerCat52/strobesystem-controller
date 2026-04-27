@@ -51,6 +51,7 @@ struct SystemState {
   bool safeStateActive = true;
   Mode activeMode = Mode::Idle;
   unsigned long lastCommandAtMs = 0;
+  unsigned long disconnectSafeTimeoutMs = Config::kDisconnectSafeTimeoutMs;
   String lastStatus = "BOOT";
   String lastError = "";
 };

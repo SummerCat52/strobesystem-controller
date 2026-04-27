@@ -34,10 +34,18 @@ Flutter application and ESP32 firmware for configuring and controlling a strobe-
 - Status characteristic (read/notify): `5E7A1003-0000-4C0A-B001-112233445566`
 
 ## Supported Command Protocol
+- `HELLO`
+- `HEARTBEAT`
 - `PING`
+- `GET_CONFIG`
 - `STATUS`
 - `STOP`
 - `ALL_OFF`
+- `SET_GPIO;CH=FrontLeft;GPIO=16`
+- `SET_INVERT;CH=Beacon;VALUE=0`
+- `SET_FAILSAFE;MS=5000`
+- `SAVE_CONFIG`
+- `FACTORY_RESET`
 - `FrontLeft=ON` / `FrontLeft=OFF` and other channel direct commands
 - `MODE=ON;CH=FrontLeft,FrontRight`
 - `MODE=OFF;GROUP=REAR`

@@ -66,6 +66,26 @@ ParsedCommand CommandParser::parseTextCommand(String command) const {
     result.type = ParsedCommandType::Ping;
     return result;
   }
+  if (upper == "HELLO") {
+    result.type = ParsedCommandType::Hello;
+    return result;
+  }
+  if (upper == "HEARTBEAT") {
+    result.type = ParsedCommandType::Heartbeat;
+    return result;
+  }
+  if (upper == "GET_CONFIG") {
+    result.type = ParsedCommandType::GetConfig;
+    return result;
+  }
+  if (upper == "SAVE_CONFIG") {
+    result.type = ParsedCommandType::SaveConfig;
+    return result;
+  }
+  if (upper == "FACTORY_RESET") {
+    result.type = ParsedCommandType::FactoryReset;
+    return result;
+  }
   if (upper == "STATUS") {
     result.type = ParsedCommandType::Status;
     return result;
@@ -80,6 +100,13 @@ ParsedCommand CommandParser::parseTextCommand(String command) const {
   }
   if (upper.startsWith("MODE=")) {
     return parseModeCommand(command);
+  }
+  if (upper.startsWith("SET_GPIO") || upper.startsWith("SET_INVERT") ||
+      upper.startsWith("SET_FAILSAFE")) {
+    if (!parseKeyValueCommand(command, result)) {
+      result.type = ParsedCommandType::Invalid;
+    }
+    return result;
   }
   if (upper.indexOf('=') > 0) {
     return parseImmediateChannelCommand(command);
@@ -336,4 +363,99 @@ bool CommandParser::parseOrderList(const String& rawValue,
   }
   config.sequenceLength = index;
   return index > 0;
+}
+
+bool CommandParser::parseKeyValueCommand(String command,
+                                         ParsedCommand& result) const {
+  String action = nextToken(command, ';');
+  action.toUpperCase();
+
+  if (action == "SET_GPIO") {
+    result.type = ParsedCommandType::SetGpio;
+  } else if (action == "SET_INVERT") {
+    result.type = ParsedCommandType::SetInvert;
+  } else if (action == "SET_FAILSAFE") {
+    result.type = ParsedCommandType::SetFailsafe;
+  } else {
+    result.error = "Unsupported config command";
+    return false;
+  }
+
+  while (!command.isEmpty()) {
+    const String token = nextToken(command, ';');
+    const int separatorIndex = token.indexOf('=');
+    if (separatorIndex < 0) {
+      result.error = "Missing '=' in config command";
+      return false;
+    }
+
+    String key = token.substring(0, separatorIndex);
+    String value = token.substring(separatorIndex + 1);
+    key.trim();
+    value.trim();
+    key.toUpperCase();
+
+    if (key == "CH") {
+      result.targetChannel = channelFromName(value);
+      if (result.targetChannel == ChannelId::Invalid) {
+        result.error = "Invalid CH";
+        return false;
+      }
+      continue;
+    }
+
+    if (key == "GPIO") {
+      unsigned long parsed = 0;
+      if (!parsePositiveInteger(value, 39UL, parsed)) {
+        result.error = "Invalid GPIO";
+        return false;
+      }
+      result.gpio = static_cast<uint8_t>(parsed);
+      continue;
+    }
+
+    if (key == "VALUE") {
+      value.toUpperCase();
+      if (value == "1" || value == "TRUE" || value == "ON") {
+        result.boolValue = true;
+      } else if (value == "0" || value == "FALSE" || value == "OFF") {
+        result.boolValue = false;
+      } else {
+        result.error = "Invalid VALUE";
+        return false;
+      }
+      continue;
+    }
+
+    if (key == "MS") {
+      unsigned long parsed = 0;
+      if (!parsePositiveInteger(value, Config::kMaxDisconnectSafeTimeoutMs,
+                                parsed) ||
+          parsed < Config::kMinDisconnectSafeTimeoutMs) {
+        result.error = "Invalid MS";
+        return false;
+      }
+      result.timeoutMs = parsed;
+      continue;
+    }
+
+    result.error = "Unknown config field: " + key;
+    return false;
+  }
+
+  if ((result.type == ParsedCommandType::SetGpio ||
+       result.type == ParsedCommandType::SetInvert) &&
+      result.targetChannel == ChannelId::Invalid) {
+    result.error = "CH is required";
+    return false;
+  }
+  if (result.type == ParsedCommandType::SetGpio && result.gpio == 0) {
+    result.error = "GPIO is required";
+    return false;
+  }
+  if (result.type == ParsedCommandType::SetFailsafe && result.timeoutMs == 0) {
+    result.error = "MS is required";
+    return false;
+  }
+  return true;
 }

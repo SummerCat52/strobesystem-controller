@@ -39,14 +39,14 @@ void main() {
       expect(state.connection.message, contains('Ready for Bluetooth'));
     });
 
-    test('scan and connect updates state and sends ping', () async {
+    test('scan and connect updates state and requests config', () async {
       await state.bootstrap();
       await state.scanControllers();
       await state.connect('ESP32-StrobeCtrl (AA:BB)');
 
       expect(permission.requested, isTrue);
       expect(state.connection.status, ControllerConnectionStatus.connected);
-      expect(connection.sentCommands, contains('PING'));
+      expect(connection.sentCommands, containsAll(['HELLO', 'GET_CONFIG']));
     });
 
     test('incoming disconnect resets connection and active controls', () async {

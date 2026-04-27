@@ -50,6 +50,43 @@ void LightController::setMask(uint32_t channelMask, bool on) {
   }
 }
 
+bool LightController::configureChannel(ChannelId id, uint8_t gpio,
+                                       bool inverted) {
+  const uint8_t index = static_cast<uint8_t>(id);
+  if (index >= Config::kChannelCount || gpio == 0) {
+    return false;
+  }
+
+  const bool oldOffPinState =
+      logicalStateToPinState(false, _channels[index].inverted);
+  digitalWrite(_channels[index].gpio, oldOffPinState ? HIGH : LOW);
+
+  _channels[index].gpio = gpio;
+  _channels[index].inverted = inverted;
+  _channelStates[index] = false;
+
+  const bool newOffPinState = logicalStateToPinState(false, inverted);
+  digitalWrite(gpio, newOffPinState ? HIGH : LOW);
+  pinMode(gpio, OUTPUT);
+  return true;
+}
+
+bool LightController::setChannelGpio(ChannelId id, uint8_t gpio) {
+  const uint8_t index = static_cast<uint8_t>(id);
+  if (index >= Config::kChannelCount) {
+    return false;
+  }
+  return configureChannel(id, gpio, _channels[index].inverted);
+}
+
+bool LightController::setChannelInverted(ChannelId id, bool inverted) {
+  const uint8_t index = static_cast<uint8_t>(id);
+  if (index >= Config::kChannelCount) {
+    return false;
+  }
+  return configureChannel(id, _channels[index].gpio, inverted);
+}
+
 void LightController::pulseSingle(ChannelId id, bool on) {
   setChannel(id, on);
 }

@@ -29,7 +29,7 @@ void SafetyManager::update(unsigned long nowMs, SystemState& state) {
   if (!state.bleClientConnected) {
     return;
   }
-  if (nowMs - state.lastCommandAtMs < Config::kDisconnectSafeTimeoutMs) {
+  if (nowMs - state.lastCommandAtMs < state.disconnectSafeTimeoutMs) {
     return;
   }
   enterSafeState(state, "COMMAND_TIMEOUT");

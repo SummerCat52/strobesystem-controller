@@ -12,6 +12,8 @@ constexpr char kStatusCharacteristicUuid[] =
 
 constexpr uint8_t kChannelCount = 8;
 constexpr unsigned long kDisconnectSafeTimeoutMs = 5000;
+constexpr unsigned long kMinDisconnectSafeTimeoutMs = 1000;
+constexpr unsigned long kMaxDisconnectSafeTimeoutMs = 60000;
 constexpr unsigned long kDefaultPulseOnMs = 80;
 constexpr unsigned long kDefaultPulseOffMs = 80;
 constexpr unsigned long kDefaultSeriesPauseMs = 300;

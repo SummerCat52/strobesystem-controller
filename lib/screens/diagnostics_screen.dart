@@ -72,13 +72,18 @@ class DiagnosticsScreen extends StatelessWidget {
                   children: [
                     FilledButton.tonal(
                       onPressed: () =>
-                          state.sendRawCommand('PING', critical: true),
-                      child: const Text('PING'),
+                          state.sendRawCommand('HELLO', critical: true),
+                      child: const Text('HELLO'),
                     ),
                     FilledButton.tonal(
                       onPressed: () =>
-                          state.sendRawCommand('STATUS', critical: true),
-                      child: const Text('STATUS'),
+                          state.sendRawCommand('HEARTBEAT', critical: true),
+                      child: const Text('HEARTBEAT'),
+                    ),
+                    FilledButton.tonal(
+                      onPressed: () =>
+                          state.sendRawCommand('GET_CONFIG', critical: true),
+                      child: const Text('GET_CONFIG'),
                     ),
                     FilledButton(
                       onPressed: () => state.sendRawCommand(

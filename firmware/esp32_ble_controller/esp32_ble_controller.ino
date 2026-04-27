@@ -2,6 +2,7 @@
 
 #include "BLEHandler.h"
 #include "CommandParser.h"
+#include "ConfigStore.h"
 #include "LightController.h"
 #include "PatternManager.h"
 #include "SafetyManager.h"
@@ -19,6 +20,8 @@ class StrobeControllerApp : public BLEHandlerListener {
     Serial.println();
     Serial.println("ESP32 BLE strobe controller booting...");
 
+    _configStore.begin();
+    _configStore.load(_lightController, _state);
     _lightController.begin();
     _lightController.printChannelMap();
     _safetyManager.onStartup(_state);
@@ -68,6 +71,22 @@ class StrobeControllerApp : public BLEHandlerListener {
     switch (type) {
       case ParsedCommandType::Ping:
         return "Ping";
+      case ParsedCommandType::Hello:
+        return "Hello";
+      case ParsedCommandType::Heartbeat:
+        return "Heartbeat";
+      case ParsedCommandType::GetConfig:
+        return "GetConfig";
+      case ParsedCommandType::SetGpio:
+        return "SetGpio";
+      case ParsedCommandType::SetInvert:
+        return "SetInvert";
+      case ParsedCommandType::SetFailsafe:
+        return "SetFailsafe";
+      case ParsedCommandType::SaveConfig:
+        return "SaveConfig";
+      case ParsedCommandType::FactoryReset:
+        return "FactoryReset";
       case ParsedCommandType::Status:
         return "Status";
       case ParsedCommandType::Stop:
@@ -130,6 +149,62 @@ class StrobeControllerApp : public BLEHandlerListener {
     switch (command.type) {
       case ParsedCommandType::Ping:
         publishStatus("PONG");
+        _lightController.printStateSnapshot();
+        return;
+
+      case ParsedCommandType::Hello:
+        publishStatus(buildHelloText());
+        _lightController.printStateSnapshot();
+        return;
+
+      case ParsedCommandType::Heartbeat:
+        publishStatus("HEARTBEAT_ACK");
+        return;
+
+      case ParsedCommandType::GetConfig:
+        publishStatus(buildConfigText());
+        _lightController.printStateSnapshot();
+        return;
+
+      case ParsedCommandType::SetGpio:
+        _patternManager.stop(_state, true);
+        if (!_lightController.setChannelGpio(command.targetChannel, command.gpio)) {
+          publishStatus("ERROR:SET_GPIO_FAILED");
+          return;
+        }
+        _configStore.save(_lightController, _state);
+        publishStatus("ACK:SET_GPIO;" + buildChannelConfigText(command.targetChannel));
+        _lightController.printStateSnapshot();
+        return;
+
+      case ParsedCommandType::SetInvert:
+        _patternManager.stop(_state, true);
+        if (!_lightController.setChannelInverted(command.targetChannel,
+                                                command.boolValue)) {
+          publishStatus("ERROR:SET_INVERT_FAILED");
+          return;
+        }
+        _configStore.save(_lightController, _state);
+        publishStatus("ACK:SET_INVERT;" +
+                      buildChannelConfigText(command.targetChannel));
+        _lightController.printStateSnapshot();
+        return;
+
+      case ParsedCommandType::SetFailsafe:
+        _state.disconnectSafeTimeoutMs = command.timeoutMs;
+        _configStore.save(_lightController, _state);
+        publishStatus("ACK:SET_FAILSAFE;MS=" + String(_state.disconnectSafeTimeoutMs));
+        return;
+
+      case ParsedCommandType::SaveConfig:
+        _configStore.save(_lightController, _state);
+        publishStatus("ACK:SAVE_CONFIG");
+        return;
+
+      case ParsedCommandType::FactoryReset:
+        _patternManager.stop(_state, true);
+        _configStore.factoryReset(_lightController, _state);
+        publishStatus("ACK:FACTORY_RESET;" + buildConfigText());
         _lightController.printStateSnapshot();
         return;
 
@@ -209,6 +284,44 @@ class StrobeControllerApp : public BLEHandlerListener {
     return status;
   }
 
+  String buildHelloText() const {
+    String hello = "HELLO;";
+    hello += "DEVICE=";
+    hello += Config::kDeviceName;
+    hello += ";FW=0.4.0;PROTO=1;CHANNELS=";
+    hello += String(Config::kChannelCount);
+    hello += ";FAILSAFE_MS=";
+    hello += String(_state.disconnectSafeTimeoutMs);
+    return hello;
+  }
+
+  String buildChannelConfigText(ChannelId id) const {
+    const ChannelConfig& channel = _lightController.channelConfig(id);
+    String text = "CH=";
+    text += channel.name;
+    text += ";GPIO=";
+    text += String(channel.gpio);
+    text += ";INVERT=";
+    text += channel.inverted ? "1" : "0";
+    return text;
+  }
+
+  String buildConfigText() const {
+    String text = "CONFIG;FAILSAFE_MS=";
+    text += String(_state.disconnectSafeTimeoutMs);
+    for (uint8_t i = 0; i < Config::kChannelCount; ++i) {
+      const ChannelConfig& channel =
+          _lightController.channelConfig(static_cast<ChannelId>(i));
+      text += ";";
+      text += channel.name;
+      text += "=";
+      text += String(channel.gpio);
+      text += ",";
+      text += channel.inverted ? "1" : "0";
+    }
+    return text;
+  }
+
   void publishStatus(const String& status) {
     _state.lastStatus = status;
     _bleHandler.updateStatus(status);
@@ -221,6 +334,7 @@ class StrobeControllerApp : public BLEHandlerListener {
   PatternManager _patternManager;
   SafetyManager _safetyManager;
   CommandParser _commandParser;
+  ConfigStore _configStore;
   BLEHandler _bleHandler;
 };
 

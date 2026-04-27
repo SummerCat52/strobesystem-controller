@@ -18,6 +18,9 @@ class LightController {
   void allOff();
   void setChannel(ChannelId id, bool on);
   void setMask(uint32_t channelMask, bool on);
+  bool configureChannel(ChannelId id, uint8_t gpio, bool inverted);
+  bool setChannelGpio(ChannelId id, uint8_t gpio);
+  bool setChannelInverted(ChannelId id, bool inverted);
   void pulseSingle(ChannelId id, bool on);
   void pulseMask(uint32_t channelMask, bool on);
   bool isOn(ChannelId id) const;

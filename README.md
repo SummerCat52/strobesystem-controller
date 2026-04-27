@@ -58,6 +58,11 @@ Flutter application and ESP32 firmware for configuring and controlling a strobe-
 - `flutter test --coverage`
 - `flutter test integration_test`
 
+## GitHub Releases
+- Push a tag like `v0.1.1` to build and publish a GitHub Release automatically.
+- Or run **Build APK and publish release** manually from the GitHub Actions tab.
+- Each release contains `StagePatch-release.apk`, ESP32 firmware, and a source package.
+
 ## Hardware Build Guide
 - Full Russian wiring and soldering guide: `docs/BUILD_AND_WIRING_GUIDE_RU.md`
 - Safe LED-only bench test guide: `docs/LED_BENCH_TEST_GUIDE_RU.md`

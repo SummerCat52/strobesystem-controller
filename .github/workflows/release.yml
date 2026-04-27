@@ -1,0 +1,93 @@
+name: Build APK and publish release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v0.1.1. Leave empty to auto-generate."
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  android-release:
+    name: Android APK release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Resolve release metadata
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(grep '^version:' pubspec.yaml | awk '{print $2}' | cut -d+ -f1)"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          elif [[ -n "${{ inputs.tag }}" ]]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="v${VERSION}-${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test --coverage
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Prepare release files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          cp build/app/outputs/flutter-apk/app-release.apk release/StagePatch-release.apk
+          zip -r release/ESP32_firmware_only.zip firmware/esp32_ble_controller
+          zip -r release/StagePatch_sources.zip \
+            AGENTS.md README.md CHANGELOG.md pubspec.yaml pubspec.lock \
+            lib assets android ios test integration_test docs examples firmware \
+            -x "android/.gradle/*" "android/app/build/*"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" release/* --clobber
+          else
+            gh release create "$TAG_NAME" release/* \
+              --target "$GITHUB_SHA" \
+              --title "StagePatch ${VERSION}" \
+              --notes "Android APK, ESP32 firmware, and source package for StagePatch."
+          fi

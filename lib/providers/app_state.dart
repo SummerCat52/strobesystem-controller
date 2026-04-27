@@ -64,6 +64,10 @@ class AppState extends ChangeNotifier {
   String lastLog = 'App started';
   final List<String> logs = <String>['App started'];
   String? selectedPatternId;
+  String configChannel = 'FrontLeft';
+  int configGpio = 16;
+  bool configInverted = false;
+  int failSafeMs = 5000;
   final Set<String> activeControlKeys = <String>{};
   static const Map<String, String> _channelToControlKey = <String, String>{
     'FrontLeft': 'front_left',
@@ -400,6 +404,78 @@ class AppState extends ChangeNotifier {
     logs.add('Logs cleared');
     lastLog = 'Logs cleared';
     notifyListeners();
+  }
+
+  void updateConfigChannel(String channel) {
+    configChannel = channel;
+    notifyListeners();
+  }
+
+  void updateConfigGpio(int gpio) {
+    configGpio = gpio;
+    notifyListeners();
+  }
+
+  void updateConfigInverted(bool value) {
+    configInverted = value;
+    notifyListeners();
+  }
+
+  void updateFailSafeMs(int value) {
+    failSafeMs = value;
+    notifyListeners();
+  }
+
+  String? gpioWarning(int gpio) {
+    if (gpio < 0 || gpio > 39) {
+      return 'GPIO must be between 0 and 39.';
+    }
+    if ({34, 35, 36, 39}.contains(gpio)) {
+      return 'GPIO$gpio is input-only on ESP32. Do not use it as an output.';
+    }
+    if ({0, 2, 12, 15}.contains(gpio)) {
+      return 'GPIO$gpio is a boot/strapping pin. Avoid it unless you know the board requirements.';
+    }
+    if ({1, 3}.contains(gpio)) {
+      return 'GPIO$gpio is usually Serial TX/RX. Avoid it while using USB Serial diagnostics.';
+    }
+    return null;
+  }
+
+  bool isBlockedOutputGpio(int gpio) => {34, 35, 36, 39}.contains(gpio);
+
+  Future<void> applyControllerGpioConfig() async {
+    final warning = gpioWarning(configGpio);
+    if (isBlockedOutputGpio(configGpio)) {
+      _log('VALIDATION:$warning');
+      return;
+    }
+    if (warning != null) {
+      _log('WARN:$warning');
+    }
+    await sendRawCommand(
+      'SET_GPIO;CH=$configChannel;GPIO=$configGpio',
+      critical: true,
+    );
+    await sendRawCommand(
+      'SET_INVERT;CH=$configChannel;VALUE=${configInverted ? 1 : 0}',
+      critical: true,
+    );
+  }
+
+  Future<void> applyFailSafeConfig() async {
+    final value = failSafeMs.clamp(1000, 60000).toInt();
+    failSafeMs = value;
+    await sendRawCommand('SET_FAILSAFE;MS=$value', critical: true);
+    notifyListeners();
+  }
+
+  Future<void> saveControllerConfig() async {
+    await sendRawCommand('SAVE_CONFIG', critical: true);
+  }
+
+  Future<void> factoryResetControllerConfig() async {
+    await sendRawCommand('FACTORY_RESET', critical: true);
   }
 
   void _swapConnectionService(ControllerConnectionService nextService) {

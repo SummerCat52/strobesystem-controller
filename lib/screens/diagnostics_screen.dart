@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../models/connection_state_model.dart';
 import '../providers/app_state.dart';
 import '../widgets/section_card.dart';
 
@@ -19,6 +20,25 @@ class DiagnosticsScreen extends StatelessWidget {
     _GpioRow('Side Right', 'SideRight', 'GPIO22 / D22'),
     _GpioRow('Beacon', 'Beacon', 'GPIO23 / D23'),
     _GpioRow('Flood', 'Flood', 'GPIO25 / D25'),
+  ];
+
+  static const _availableGpios = <int>[
+    4,
+    5,
+    13,
+    14,
+    16,
+    17,
+    18,
+    19,
+    21,
+    22,
+    23,
+    25,
+    26,
+    27,
+    32,
+    33,
   ];
 
   @override
@@ -53,6 +73,139 @@ class DiagnosticsScreen extends StatelessWidget {
                 Text('Mock mode: ${state.useMockMode ? 'on' : 'off'}'),
                 Text('Devices: ${state.devices.length}'),
                 Text('Profiles: ${state.profiles.length}'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Controller Config',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: state.configChannel,
+                  decoration: const InputDecoration(
+                    labelText: 'Channel',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _gpioRows
+                      .map(
+                        (row) => DropdownMenuItem<String>(
+                          value: row.command,
+                          child: Text('${row.label} (${row.command})'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      state.updateConfigChannel(value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  initialValue: state.configGpio,
+                  decoration: const InputDecoration(
+                    labelText: 'GPIO',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: _availableGpios
+                      .map(
+                        (gpio) => DropdownMenuItem<int>(
+                          value: gpio,
+                          child: Text('GPIO$gpio'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      state.updateConfigGpio(value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 8),
+                if (state.gpioWarning(state.configGpio) case final warning?)
+                  Text(
+                    warning,
+                    style: TextStyle(
+                      color: state.isBlockedOutputGpio(state.configGpio)
+                          ? Colors.redAccent
+                          : Colors.orangeAccent,
+                    ),
+                  )
+                else
+                  const Text('GPIO is suitable for output on common ESP32 DevKit boards.'),
+                const SizedBox(height: 8),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Invert output'),
+                  subtitle: const Text('Use for active-low relay or optocoupler boards.'),
+                  value: state.configInverted,
+                  onChanged: state.updateConfigInverted,
+                ),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<int>(
+                  initialValue: state.failSafeMs,
+                  decoration: const InputDecoration(
+                    labelText: 'Fail-safe timeout',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 3000, child: Text('3 seconds')),
+                    DropdownMenuItem(value: 5000, child: Text('5 seconds')),
+                    DropdownMenuItem(value: 10000, child: Text('10 seconds')),
+                    DropdownMenuItem(value: 30000, child: Text('30 seconds')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      state.updateFailSafeMs(value);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    FilledButton(
+                      onPressed: state.connection.status ==
+                                  ControllerConnectionStatus.connected &&
+                              !state.isBlockedOutputGpio(state.configGpio)
+                          ? state.applyControllerGpioConfig
+                          : null,
+                      child: const Text('Apply GPIO'),
+                    ),
+                    FilledButton.tonal(
+                      onPressed: state.connection.status ==
+                              ControllerConnectionStatus.connected
+                          ? state.applyFailSafeConfig
+                          : null,
+                      child: const Text('Apply Fail-safe'),
+                    ),
+                    FilledButton.tonal(
+                      onPressed: state.connection.status ==
+                              ControllerConnectionStatus.connected
+                          ? state.saveControllerConfig
+                          : null,
+                      child: const Text('Save to ESP32'),
+                    ),
+                    OutlinedButton(
+                      onPressed: state.connection.status ==
+                              ControllerConnectionStatus.connected
+                          ? state.factoryResetControllerConfig
+                          : null,
+                      child: const Text('Factory Reset'),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Use GET_CONFIG after changes to verify what ESP32 stored.',
+                ),
               ],
             ),
           ),
